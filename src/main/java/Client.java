@@ -22,8 +22,14 @@ public class Client extends Thread {
 
     private Consumer<Serializable> callback;
 
-    public void updateClients(String message) {
-        System.out.println(message);
+    CFourInfo game = new CFourInfo();
+    public void updateClients(CFourInfo message) {
+//        game = message;
+        game.hasTwoPlayers=message.hasTwoPlayers;
+        game.turn=message.turn;
+        game.whoseTurn=message.whoseTurn;
+        //THIS IS WHERE WE WILL KEEP TRACK OF THE CFOURINFOUPDATES
+//        System.out.println(message);
     }
     Client(Consumer<Serializable> call){
         callback = call;
@@ -40,8 +46,8 @@ public class Client extends Thread {
 
         while(true) {
             try {
-                String message = in.readObject().toString();
-                callback.accept(message);
+                CFourInfo message = (CFourInfo) in.readObject();
+                callback.accept((Serializable) message);
                 updateClients(message);
             }
             catch(Exception e) {}
@@ -49,11 +55,7 @@ public class Client extends Thread {
 
     }
 
-    public String getMessages(){
-        return msg;
-    }
-
-    public void send(String data) {
+    public void send(CFourInfo data) {
         try {
             out.writeObject(data);
         } catch (IOException e) {

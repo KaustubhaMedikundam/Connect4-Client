@@ -3,21 +3,28 @@ import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 import java.util.ArrayList;
 
 public class ClientGUI extends Application {
+
+	int[][] boardNum = new int[6][7];
 //	static Server serverConnection;
     static Client clientConnection;
 	ListView<String> listItems, listItems2;
 	static ArrayList<String> actions = new ArrayList<>();
+
+	CFourInfo game = new CFourInfo();
 	public ClientGUI() throws Exception {
 	}
 
@@ -40,40 +47,29 @@ public class ClientGUI extends Application {
 		// TODO Auto-generated method stub
 		primaryStage.setTitle("CLIENT");
 
-//		TextField port = new TextField();
-//		port.setPromptText("Enter a port number between 4000 and 8000");
-//
-//		Button start = new Button();
-//		start.setText("Start");
-//		start.setOnAction(e->startClient());
-//
-//
-//
-//		VBox vbox = new VBox(port, start);
-//		vbox.setAlignment(Pos.CENTER);
-		GridPane gridBoard = new GridPane();
+		TextField port = new TextField();
+		port.setPromptText("Enter a port number between 4000 and 8000");
 
-		gridBoard.setMinSize(600, 600);
-		for(int i = 0; i < 7; i ++){
-			for(int j = 0 ; j < 6; j++){
-				GameButton button = new GameButton(0);
-				button.setMinWidth(70);
-				button.setMinHeight(90);
-				gridBoard.add(button, i, j);
-			}
-		}
+		Button start = new Button();
+		start.setText("Start");
+		start.setOnAction(e->startClient(primaryStage));
+
+
+
+		VBox vbox = new VBox(port, start);
+		vbox.setAlignment(Pos.CENTER);
 
 		BorderPane root = new BorderPane();
-		root.setRight(gridBoard);
+		root.setCenter(vbox);
 	     Scene scene = new Scene(root, 700,700);
 			primaryStage.setScene(scene);
 			primaryStage.show();
 	}
 
-	public void startClient(){
+	public void startClient(Stage primaryStage){
 		clientConnection = new Client(data->{
-//			Platform.runLater(()->{listItems2.getItems().add(data.toString());
-//			});
+			Platform.runLater(()->{acceptMessage((CFourInfo) data, primaryStage);
+			});
 		});
 		clientConnection.start();
 //		if(actions.size()==1){
@@ -81,13 +77,116 @@ public class ClientGUI extends Application {
 //		}
 	}
 
-	public void makeBoard(){
+
+	public void acceptMessage(CFourInfo mes, Stage primaryStage){
+		if(!mes.hasTwoPlayers){
+			hasOnePlayer(primaryStage);
+		}
+		else {
+			game = mes;
+			if(!mes.p1Win && !mes.p2Win && !mes.tie){
+				if(mes.turn){
+					if(mes.whoseTurn){
+						makeBoard(primaryStage, 1);
+					}
+					else if(!mes.whoseTurn){
+						makeBoard(primaryStage, 2);
+					}
+					//if it's the player turn
+				}
+				else if(!mes.turn){
+					//if it isn't player turn
+					disabledBoard(primaryStage, 2);
+				}
+			}
+		}
+	}
+
+
+	public void hasOnePlayer(Stage primaryStage){
+		Text info = new Text();
+		info.setText("Waiting For Second Player...");
+		BorderPane bp = new BorderPane();
+		bp.setCenter(info);
+		Scene scene = new Scene(bp, 700,700);
+		primaryStage.setScene(scene);
+		primaryStage.show();
+	}
+	public void makeBoard(Stage primaryStage, int player){
 		GridPane gridBoard = new GridPane();
 		gridBoard.setMinSize(650, 650);
 		for(int i = 0; i < 7; i ++){
 			for(int j = 0 ; j < 6; j++){
-				gridBoard.add(new GameButton(0), i, j);
+				GameButton button = new GameButton(boardNum[j][i]);
+				button.setMinHeight(75);
+				button.setMinWidth(75);
+				if(boardNum[j][i]==1){
+					button.setStyle("-fx-background-color: POWDERBLUE");
+				}
+				else if(boardNum[j][i]==2){
+					button.setStyle("-fx-background-color: PLUM");
+				}
+				int finalI = i;
+				int finalJ = j;
+				button.setOnAction(e->updateBoard(primaryStage, finalI, finalJ, player));
+				gridBoard.add(button, i, j);
 			}
+		}
+		BorderPane bp = new BorderPane();
+		bp.setRight(gridBoard);
+		Scene scene = new Scene(bp, 700,700);
+		primaryStage.setScene(scene);
+		primaryStage.show();
+	}
+	public void updateBoard(Stage primaryStage, int column, int row, int player){
+		if(checkBoard(column, row)){
+			boardNum[row][column] = player;
+			game.rowMove = row;
+			game.columnMove = column;
+			clientConnection.send(game);
+		}
+		else{
+			Alert fail= new Alert(Alert.AlertType.INFORMATION);
+			fail.setHeaderText("failure");
+			fail.setContentText("Move is not valid...try again");
+			fail.showAndWait();
+			makeBoard(primaryStage, player);
+		}
+	}
+
+	public void disabledBoard(Stage primaryStage,int player){
+		GridPane gridBoard = new GridPane();
+		gridBoard.setMinSize(650, 650);
+		for(int i = 0; i < 7; i ++){
+			for(int j = 0 ; j < 6; j++){
+				GameButton button = new GameButton(boardNum[j][i]);
+				button.setMinHeight(75);
+				button.setMinWidth(75);
+				button.setDisable(true);
+				if(boardNum[j][i]==1){
+					button.setStyle("-fx-background-color: POWDERBLUE");
+				}
+				else if(boardNum[j][i]==2){
+					button.setStyle("-fx-background-color: PLUM");
+				}
+				gridBoard.add(button, i, j);
+			}
+		}
+		BorderPane bp = new BorderPane();
+		bp.setRight(gridBoard);
+		Scene scene = new Scene(bp, 700,700);
+		primaryStage.setScene(scene);
+		primaryStage.show();
+	}
+
+
+	public Boolean checkBoard(int col , int row){
+		//returns if valid move or not
+		if( row==5 || boardNum[col][row+1]!=0){
+			return true;
+		}
+		else {
+			return false;
 		}
 	}
 }
