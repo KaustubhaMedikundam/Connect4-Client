@@ -24,10 +24,12 @@ public class Client extends Thread {
 
     CFourInfo game = new CFourInfo();
     public void updateClients(CFourInfo message) {
-//        game = message;
-        game.hasTwoPlayers=message.hasTwoPlayers;
-        game.turn=message.turn;
-        game.whoseTurn=message.whoseTurn;
+        game = message;
+//        game.hasTwoPlayers=message.hasTwoPlayers;
+//        game.turn=message.turn;
+//        game.whoseTurn=message.whoseTurn;
+//        game.rowMove=message.rowMove;
+//        game.columnMove=message.columnMove;
         //THIS IS WHERE WE WILL KEEP TRACK OF THE CFOURINFOUPDATES
 //        System.out.println(message);
     }
@@ -36,7 +38,7 @@ public class Client extends Thread {
     }
     public void run() {
         try {
-            socketClient= new Socket("127.0.0.1",5555);
+            socketClient= new Socket("127.0.0.1", 5555);
             out = new ObjectOutputStream(socketClient.getOutputStream());
             in = new ObjectInputStream(socketClient.getInputStream());
             socketClient.setTcpNoDelay(true);

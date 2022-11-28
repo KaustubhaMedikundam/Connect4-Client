@@ -18,7 +18,7 @@ import java.util.ArrayList;
 
 public class ClientGUI extends Application {
 
-	int[][] boardNum = new int[6][7];
+	public int[][] boardNum = new int[6][7];
 //	static Server serverConnection;
     static Client clientConnection;
 	ListView<String> listItems, listItems2;
@@ -84,25 +84,96 @@ public class ClientGUI extends Application {
 		}
 		else {
 			game = mes;
+			game.rowMove = mes.rowMove;
 			if(!mes.p1Win && !mes.p2Win && !mes.tie){
 				if(mes.turn){
 					if(mes.whoseTurn){
+						if(mes.rowMove!=10){
+							System.out.println("enabled");
+							boardNum[mes.rowMove][mes.columnMove] = 2;
+						}
 						makeBoard(primaryStage, 1);
 					}
-					else if(!mes.whoseTurn){
+					else {
+						if(mes.rowMove!=10){
+							System.out.println("wrong");
+							boardNum[mes.rowMove][mes.columnMove] = 1;
+						}
 						makeBoard(primaryStage, 2);
 					}
 					//if it's the player turn
 				}
-				else if(!mes.turn){
+				else {
 					//if it isn't player turn
-					disabledBoard(primaryStage, 2);
+					if(mes.whoseTurn){
+						disabledBoard(primaryStage);
+					}
+					else {
+						disabledBoard(primaryStage);
+					}
 				}
 			}
 		}
 	}
 
 
+	public Boolean checkWin(CFourInfo game){
+		if(checkHor()){
+			return true;
+		}
+		if(checkVert()){
+			return true;
+		}
+		if(checkDiagonal()){
+			return true;
+		}
+		return false;
+	}
+
+	public Boolean checkVert(){
+		int pl = 0;
+		int num = 0;
+		for(int j = 0; j < 7 ; j++){
+			for(int i = 0 ; i < 6 ; i++){
+				if(pl == boardNum[i][j] && pl!=0 ){
+					num++;
+				}
+				else if(num<4) {
+					num = 0;
+				}
+				pl = boardNum[i][j];
+				System.out.println(pl);
+			}
+		}
+		if(num >= 4){
+			return true;
+		}
+		return false;
+	}
+
+	public Boolean checkDiagonal(){
+		return false;
+	}
+
+	public Boolean checkHor(){
+		int pl = 0;
+		int num = 0;
+		for(int i = 0; i < 6 ; i++){
+			for (int j = 0; j < 7; j++){
+				if(pl == boardNum[i][j] && pl!=0 ){
+					num++;
+				}
+				else if(num<4) {
+					num = 0;
+				}
+				pl = boardNum[i][j];
+			}
+		}
+		if(num >= 4){
+			return true;
+		}
+		return false;
+	}
 	public void hasOnePlayer(Stage primaryStage){
 		Text info = new Text();
 		info.setText("Waiting For Second Player...");
@@ -128,7 +199,7 @@ public class ClientGUI extends Application {
 				}
 				int finalI = i;
 				int finalJ = j;
-				button.setOnAction(e->updateBoard(primaryStage, finalI, finalJ, player));
+				button.setOnAction(e->updateBoard(primaryStage, finalJ, finalI ,player));
 				gridBoard.add(button, i, j);
 			}
 		}
@@ -138,11 +209,19 @@ public class ClientGUI extends Application {
 		primaryStage.setScene(scene);
 		primaryStage.show();
 	}
-	public void updateBoard(Stage primaryStage, int column, int row, int player){
-		if(checkBoard(column, row)){
+	public void updateBoard(Stage primaryStage, int row, int column, int player){
+		if(checkBoard(row,column)){
 			boardNum[row][column] = player;
 			game.rowMove = row;
 			game.columnMove = column;
+			game.turn = !game.turn;
+//			System.out.println(game.turn + "" +game.whoseTurn );
+			if(checkWin(game)&&player==1){
+				game.p1Win = true;
+			}
+			if(checkWin(game)&&player==2){
+				game.p2Win = true;
+			}
 			clientConnection.send(game);
 		}
 		else{
@@ -154,7 +233,7 @@ public class ClientGUI extends Application {
 		}
 	}
 
-	public void disabledBoard(Stage primaryStage,int player){
+	public void disabledBoard(Stage primaryStage){
 		GridPane gridBoard = new GridPane();
 		gridBoard.setMinSize(650, 650);
 		for(int i = 0; i < 7; i ++){
@@ -180,9 +259,9 @@ public class ClientGUI extends Application {
 	}
 
 
-	public Boolean checkBoard(int col , int row){
+	public Boolean checkBoard(int row , int col){
 		//returns if valid move or not
-		if( row==5 || boardNum[col][row+1]!=0){
+		if( row==5 || boardNum[row+1][col]!=0){
 			return true;
 		}
 		else {
