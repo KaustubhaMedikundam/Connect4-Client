@@ -146,11 +146,6 @@ public class ClientGUI extends Application {
 	}
 
 	public void preWinScreen(Stage primaryStage, CFourInfo mes){
-		if(rowWins[0]!=10){
-			for(int i = 0; i < 4; i++){
-				boardNum[rowWins[i]][colWins[i]]=3;
-			}
-		}
 		GridPane gridBoard = new GridPane();
 		gridBoard.setMinSize(650, 650);
 		for (int i = 0; i < 7; i++) {
@@ -173,23 +168,32 @@ public class ClientGUI extends Application {
 		Scene scene = new Scene(gridBoard, 700,700);
 		primaryStage.setScene(scene);
 		primaryStage.show();
-		try {
-			Thread.sleep(3000);
-		} catch (InterruptedException e) {
-			throw new RuntimeException(e);
-		}
-		winScreen(primaryStage, mes);
+//		try {
+//			Thread.sleep(3000);
+//		} catch (InterruptedException e) {
+//			throw new RuntimeException(e);
+//		}
+//		winScreen(primaryStage, mes);
 
 	}
 
 	public Boolean checkWin(CFourInfo game){
 		if(checkHor(boardNum)){
+			for(int i = 0; i < 4; i++){
+				boardNum[rowWins[i]][colWins[i]] = 3;
+			}
 			return true;
 		}
 		if(checkVert(boardNum)){
+			for(int i = 0; i < 4; i++){
+				boardNum[rowWins[i]][colWins[i]] = 3;
+			}
 			return true;
 		}
 		if(checkDiagonal(boardNum)){
+			for(int i = 0; i < 4; i++){
+				boardNum[rowWins[i]][colWins[i]] = 3;
+			}
 			return true;
 		}
 		return false;
@@ -333,16 +337,16 @@ public class ClientGUI extends Application {
 				}
 				else if(num<4) {
 					for(int a = 0; a < rowWins.length; a++){
-						rowWins[a] = 10;
-						colWins[a] = 10;
+//						rowWins[a] = 10;
+//						colWins[a] = 10;
 					}
 					c = 0;
 					num = 1;
 				}
 				pl = boardNum[i][j];
 				if(num >= 4){
-					rowWins[3] = rowWins[0];
-					colWins[3] = colWins[2]+1;
+//					rowWins[3] = rowWins[0];
+//					colWins[3] = colWins[2]+1;
 					return true;
 				}
 			}
