@@ -8,6 +8,7 @@ public class CFourInfo implements Serializable {
     int columnMove;
     int rowMove;
     boolean turn;//make it true if client turn false if not
+    int numPlayers;
 
     boolean whoseTurn;//make it true if p1 turn and false if p2 turn;
 

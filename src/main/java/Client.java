@@ -25,13 +25,8 @@ public class Client extends Thread {
     CFourInfo game = new CFourInfo();
     public void updateClients(CFourInfo message) {
         game = message;
-//        game.hasTwoPlayers=message.hasTwoPlayers;
-//        game.turn=message.turn;
-//        game.whoseTurn=message.whoseTurn;
-//        game.rowMove=message.rowMove;
-//        game.columnMove=message.columnMove;
+//
         //THIS IS WHERE WE WILL KEEP TRACK OF THE CFOURINFOUPDATES
-//        System.out.println(message);
     }
     Client(Consumer<Serializable> call){
         callback = call;
@@ -50,7 +45,7 @@ public class Client extends Thread {
             try {
                 CFourInfo message = (CFourInfo) in.readObject();
                 callback.accept((Serializable) message);
-                updateClients(message);
+//                updateClients(message);
             }
             catch(Exception e) {}
         }
