@@ -20,6 +20,7 @@ public class Client extends Thread {
     ObjectOutputStream out;
     ObjectInputStream in;
 
+    int portNum;
     private Consumer<Serializable> callback;
 
     CFourInfo game = new CFourInfo();
@@ -28,12 +29,14 @@ public class Client extends Thread {
 //
         //THIS IS WHERE WE WILL KEEP TRACK OF THE CFOURINFOUPDATES
     }
-    Client(Consumer<Serializable> call){
+    Client(Consumer<Serializable> call, int port){
         callback = call;
+        portNum = port;
     }
+
     public void run() {
         try {
-            socketClient= new Socket("127.0.0.1", 5555);
+            socketClient= new Socket("127.0.0.1", portNum);
             out = new ObjectOutputStream(socketClient.getOutputStream());
             in = new ObjectInputStream(socketClient.getInputStream());
             socketClient.setTcpNoDelay(true);

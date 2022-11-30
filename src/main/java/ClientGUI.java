@@ -48,6 +48,7 @@ public class ClientGUI extends Application {
 
 	}
 
+
 	//feel free to remove the starter code from this method
 	@Override
 	public void start(Stage primaryStage) throws Exception {
@@ -60,7 +61,7 @@ public class ClientGUI extends Application {
 		Button start = new Button();
 		start.setText("Start");
 //		start.setOnAction(new NewGameEvent(primaryStage));
-		start.setOnAction(e->startClient(primaryStage));
+		start.setOnAction(e->startClient(primaryStage, Integer.parseInt(port.getText())));
 
 
 
@@ -82,14 +83,14 @@ public class ClientGUI extends Application {
 		});
 	}
 
-	public void startClient(Stage primaryStage){
+	public void startClient(Stage primaryStage, int port){
 		clientConnection = new Client(data->{
 			Platform.runLater(()->{
 				acceptMessage((CFourInfo) data, primaryStage);
 				System.out.println("accepted message: " + ((CFourInfo) data).hasTwoPlayers);
 			});
-		});
-//
+		}, port);
+//	`
 		clientConnection.start();
 	}
 
@@ -138,7 +139,6 @@ public class ClientGUI extends Application {
 				}
 			}
 			else{
-				checkWin(game);
 				preWinScreen(primaryStage, mes);
 			}
 		}
@@ -164,6 +164,9 @@ public class ClientGUI extends Application {
 				} else if (boardNum[j][i] == 2) {
 					button.setStyle("-fx-background-color: PLUM");
 				}
+				else if (boardNum[j][i] == 3) {
+					button.setStyle("-fx-background-color: LIGHTGREEN");
+				}
 				gridBoard.add(button, i, j);
 			}
 		}
@@ -180,24 +183,24 @@ public class ClientGUI extends Application {
 	}
 
 	public Boolean checkWin(CFourInfo game){
-		if(checkHor()){
+		if(checkHor(boardNum)){
 			return true;
 		}
-		if(checkVert()){
+		if(checkVert(boardNum)){
 			return true;
 		}
-		if(checkDiagonal()){
+		if(checkDiagonal(boardNum)){
 			return true;
 		}
 		return false;
 	}
 
-	static public Boolean checkVert(){
+	static public Boolean checkVert(int[][] boardNum){
 		int pl = boardNum[0][0];
 //		rowWins[0] = 0;
 //		colWins[0] = 0;
 		int c = 0;
-		int num = 1;
+		int num = 0;
 		for(int j = 0; j < 7 ; j++){
 			for(int i = 0 ; i < 6 ; i++){
 				if(pl == boardNum[i][j] && pl!=0 ){
@@ -214,25 +217,27 @@ public class ClientGUI extends Application {
 					num = 1;
 				}
 				pl = boardNum[i][j];
+				if(num >= 4){
+					return true;
+				}
 			}
+			num = 0;
 		}
-		if(num >= 4){
+
+		return false;
+	}
+
+	public static Boolean checkDiagonal(int[][] boardNum){
+		if(checkNW(boardNum)){
+			return true;
+		}
+		if(checkNE(boardNum)){
 			return true;
 		}
 		return false;
 	}
 
-	public static Boolean checkDiagonal(){
-		if(checkNW()){
-			return true;
-		}
-		if(checkNE()){
-			return true;
-		}
-		return false;
-	}
-
-	public static Boolean checkNW() {
+	public static Boolean checkNW(int[][] boardNum) {
 		int pl = 0;
 		int num = 1;
 		int a = 0;
@@ -267,11 +272,12 @@ public class ClientGUI extends Application {
 					return true;
 				}
 			}
+			num = 1;
 		}
 		return false;
 	}
 
-	public static Boolean checkNE(){
+	public static Boolean checkNE(int[][] boardNum){
 		int pl = 0;
 		int num = 1;
 		int a = 0;
@@ -298,7 +304,7 @@ public class ClientGUI extends Application {
 							colWins[k] = 10;
 						}
 						c = 0;
-						num = 1;
+						num = 0;
 						break;
 					}
 				}
@@ -306,15 +312,16 @@ public class ClientGUI extends Application {
 					return true;
 				}
 			}
+			num = 1;
 		}
 		return false;
 	}
 
-	public static Boolean checkHor(){
+	public static Boolean checkHor(int[][] boardNum){
 		int pl = boardNum[0][0];//which player were checking for
 //		rowWins[0] = 0;
 //		colWins[0] = 0;
-		int num = 1;//count of how many in a row
+		int num = 0;//count of how many in a row
 		int c = 0;
 		for(int i = 0; i < 6 ; i++){
 			for (int j = 0; j < 7; j++){
@@ -339,6 +346,7 @@ public class ClientGUI extends Application {
 					return true;
 				}
 			}
+			num = 0;
 		}
 
 		return false;
@@ -385,7 +393,7 @@ public class ClientGUI extends Application {
 		}
 	}
 
-	public Boolean checkTie(){
+	public Boolean checkTie(int[][] boardNum){
 		int count = 0;
 		for(int i = 0; i < 6; i++){
 			for(int j = 0; j < 7; j++){
@@ -414,7 +422,7 @@ public class ClientGUI extends Application {
 				if (checkWin(game) && player == 2) {
 					game.p2Win = true;
 				}
-				if (!game.p1Win && !game.p2Win && checkTie()) {
+				if (!game.p1Win && !game.p2Win && checkTie(boardNum)) {
 					game.tie = true;
 				}
 				clientConnection.send(game);
