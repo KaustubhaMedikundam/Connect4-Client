@@ -1,4 +1,6 @@
 import com.sun.source.doctree.EndElementTree;
+import javafx.animation.PauseTransition;
+import javafx.animation.SequentialTransition;
 import javafx.application.Application;
 
 import javafx.application.Platform;
@@ -17,6 +19,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+import javafx.util.Duration;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -58,18 +61,31 @@ public class ClientGUI extends Application {
 		TextField port = new TextField();
 		port.setPromptText("Enter a port number between 4000 and 8000");
 
-		Button start = new Button();
-		start.setText("Start");
-//		start.setOnAction(new NewGameEvent(primaryStage));
+		TextField ip = new TextField();
+		ip.setPromptText("Enter an IP address");
+
+		Button start = new Button("start");
+		start.setPrefWidth(80);
+		start.setPrefHeight(30);
 		start.setOnAction(e->startClient(primaryStage, Integer.parseInt(port.getText())));
 
+		Text welcome = new Text("Welcome to Connect Four!");
+		welcome.setStyle("-fx-font-size: 30; -fx-text-fill: WHITE");
+//		welcome.setStyle("-fx-font-size: 50");
 
+		for(int i = 0; i < 6; i ++){
+			for(int j = 0; j < 7; j++){
+				boardNum[i][j] = 0;
+			}
+		}
 
-		VBox vbox = new VBox(port, start);
+		VBox vbox = new VBox(welcome,port, ip, start);
 		vbox.setAlignment(Pos.CENTER);
-
+		vbox.setSpacing(20);
 		BorderPane root = new BorderPane();
 		root.setCenter(vbox);
+		root.setStyle("-fx-background-color:DARKSLATEBLUE");
+//		root.setStyle("-fx-spacing: 20");
 	     Scene scene = new Scene(root, 700,700);
 			primaryStage.setScene(scene);
 			primaryStage.show();
@@ -86,8 +102,11 @@ public class ClientGUI extends Application {
 	public void startClient(Stage primaryStage, int port){
 		clientConnection = new Client(data->{
 			Platform.runLater(()->{
-				acceptMessage((CFourInfo) data, primaryStage);
-				System.out.println("accepted message: " + ((CFourInfo) data).hasTwoPlayers);
+				try {
+					acceptMessage((CFourInfo) data, primaryStage);
+				} catch (Exception e) {
+					throw new RuntimeException(e);
+				}
 			});
 		}, port);
 //	`
@@ -95,11 +114,12 @@ public class ClientGUI extends Application {
 	}
 
 
-	public void acceptMessage(CFourInfo mes, Stage primaryStage){
+	public void acceptMessage(CFourInfo mes, Stage primaryStage) throws Exception {
 		game = mes;
-//		System.out.println(mes.hasTwoPlayers);
+		if(mes.numPlayers==1){
+			reStartGame(primaryStage);
+		}
 		if(!mes.hasTwoPlayers){
-//			System.out.println("someone has left the game.");
 			game.rowMove=10;
 			for(int i = 0; i < 6; i ++){
 				for(int j = 0; j < 7; j++){
@@ -110,7 +130,6 @@ public class ClientGUI extends Application {
 		}
 		else {
 //			game = mes;
-//			System.out.println("ran the true statement");
 			game.rowMove = mes.rowMove;
 			if(!mes.p1Win && !mes.p2Win && !mes.tie){
 				if(mes.turn){
@@ -139,13 +158,21 @@ public class ClientGUI extends Application {
 				}
 			}
 			else{
+				if(mes.turn){
+					if(mes.whoseTurn){
+						boardNum[mes.rowMove][mes.columnMove] = 2;
+					}
+					else {
+						boardNum[mes.rowMove][mes.columnMove] = 1;
+					}
+				}
 				preWinScreen(primaryStage, mes);
 			}
 		}
-//		System.out.println("executed");
 	}
 
-	public void preWinScreen(Stage primaryStage, CFourInfo mes){
+	public void preWinScreen(Stage primaryStage, CFourInfo mes) throws InterruptedException {
+		checkWin(game,boardNum);
 		GridPane gridBoard = new GridPane();
 		gridBoard.setMinSize(650, 650);
 		for (int i = 0; i < 7; i++) {
@@ -168,12 +195,10 @@ public class ClientGUI extends Application {
 		Scene scene = new Scene(gridBoard, 700,700);
 		primaryStage.setScene(scene);
 		primaryStage.show();
-//		try {
-//			Thread.sleep(3000);
-//		} catch (InterruptedException e) {
-//			throw new RuntimeException(e);
-//		}
-//		winScreen(primaryStage, mes);
+		PauseTransition pause = new PauseTransition(Duration.seconds(3));
+		pause.play();
+		pause.setOnFinished(e->	winScreen(primaryStage,mes));
+
 
 	}
 
@@ -201,8 +226,6 @@ public class ClientGUI extends Application {
 
 	static public Boolean checkVert(int[][] boardNum){
 		int pl = boardNum[0][0];
-//		rowWins[0] = 0;
-//		colWins[0] = 0;
 		int c = 0;
 		int num = 0;
 		for(int j = 0; j < 7 ; j++){
@@ -211,23 +234,22 @@ public class ClientGUI extends Application {
 					num++;
 					rowWins[c] = i;
 					colWins[c] = j;
+					c++;
 				}
 				else if(num<4) {
-					for(int a = 0; a < rowWins.length; a++){
-//						rowWins[a] = 0;
-//						colWins[a] = 0;
-					}
-					c = 0;
+					rowWins[0] = i;
+					colWins[0] = j;
+					c = 1;
 					num = 1;
 				}
 				pl = boardNum[i][j];
-				if(num >= 4){
+				if(num == 4){
 					return true;
 				}
 			}
+			c = 0;
 			num = 0;
 		}
-
 		return false;
 	}
 
@@ -246,28 +268,26 @@ public class ClientGUI extends Application {
 		int num = 1;
 		int a = 0;
 		int b = 0;
-		rowWins[0] = 0;
-		colWins[0] = 0;
 		int c = 0;
 		for (int j = 0; j < 7; j++) {
 			for (int i = 0; i < 6; i++) {
 				pl = boardNum[i][j];
 				a = i;
 				b = j;
+				rowWins[0] = a;
+				colWins[0] = b;
+				c=1;
 				while(a>0&&b>0&&pl!=0){
 					a = a-1;
 					b = b-1;
 					if(pl == boardNum[a][b]){
 						rowWins[c] = a;
 						colWins[c] = b;
+						c++;
 						num++;
 					}
 					else if(num<4){
-						for(int k = 0; k < rowWins.length; k++){
-//							rowWins[k] = 10;
-//							colWins[k] = 10;
-						}
-						c = 0;
+						c = 1;
 						num = 1;
 						break;
 					}
@@ -276,7 +296,8 @@ public class ClientGUI extends Application {
 					return true;
 				}
 			}
-			num = 1;
+			c=0;
+			num = 0;
 		}
 		return false;
 	}
@@ -292,26 +313,30 @@ public class ClientGUI extends Application {
 				pl = boardNum[i][j];
 				a = i;
 				b = j;
+				rowWins[0] = a;
+				colWins[0] = b;
+				c=1;
 				while(a>0&&b<6&&pl!=0){
 					a = a-1;
 					b = b+1;
 					if(pl == boardNum[a][b]){
+						rowWins[c] = a;
+						colWins[c] = b;
+						c++;
 						num++;
 					}
 					else if(num<4){
-						for(int k = 0; k < rowWins.length; k++){
-
-						}
-						c = 0;
-						num = 0;
-						break;
+						c = 1;
+						num = 1;
+						a = 0;
 					}
 				}
-				if(num >= 4){
+				if(num == 4){
 					return true;
 				}
 			}
-			num = 1;
+			c =0;
+			num = 0;
 		}
 		return false;
 	}
@@ -325,12 +350,10 @@ public class ClientGUI extends Application {
 				if(pl == boardNum[i][j] && pl!=0 ){
 					rowWins[c] = i;
 					colWins[c] = j;
-					System.out.println("2D array " + boardNum[i][j]);
 					num++;
 					c++;
 				}
 				else if(num<4) {
-					System.out.println("middle");
 					c = 1;
 					num = 1;
 					rowWins[0] = i;
@@ -339,10 +362,6 @@ public class ClientGUI extends Application {
 				pl = boardNum[i][j];
 
 				if(num == 4){
-					for(int k = 0; k < num; k++){
-						System.out.println(k +" holds" + rowWins[k] + "col: "+ colWins[k] );
-					}
-					System.out.println("whore returns true");
 					return true;
 				}
 			}
@@ -353,7 +372,6 @@ public class ClientGUI extends Application {
 	}
 
 	public void hasOnePlayer(Stage primaryStage){
-//		System.out.println("called the has one player screen.");
 		Text info = new Text();
 		info.setText("Waiting For Second Player...");
 		BorderPane bp = new BorderPane();
@@ -382,6 +400,8 @@ public class ClientGUI extends Application {
 					gridBoard.add(button, i, j);
 				}
 			}
+			gridBoard.setVgap(3);
+			gridBoard.setHgap(3);
 //		Text oldMove = new Text();
 //		oldMove.setText("player " + player +" chose " + game.rowMove+", "+game.columnMove);
 			BorderPane bp = new BorderPane();
@@ -415,7 +435,7 @@ public class ClientGUI extends Application {
 				game.rowMove = row;
 				game.columnMove = column;
 				game.turn = !game.turn;
-//			System.out.println(game.turn + "" +game.whoseTurn );
+
 				if (checkWin(game, boardNum) && player == 1) {
 					game.p1Win = true;
 				}
@@ -454,10 +474,16 @@ public class ClientGUI extends Application {
 					gridBoard.add(button, i, j);
 				}
 			}
+			gridBoard.setVgap(3);
+			gridBoard.setHgap(3);
 			Text oldMove = new Text();
 			int cM = game.columnMove + 1;
 			int rM = game.rowMove + 1;
-			oldMove.setText("player " + player + " chose " + cM + ", " + rM);
+			oldMove.setStyle("-fx-font-size: 20");
+			if(rM!=11){
+				oldMove.setText("player " + player + " chose " + cM + ", " + rM);
+			}
+
 			BorderPane bp = new BorderPane();
 			bp.setRight(gridBoard);
 			bp.setBottom(oldMove);
@@ -484,49 +510,29 @@ public class ClientGUI extends Application {
 		}
 	}
 
-	public void reStartGame(Stage primaryStage){
-		game.numPlayers ++;
-		if(game.numPlayers==2){
-			game.p1Win=false;
-			game.p2Win = false;
-			game.tie = false;
-			game.rowMove=10;
-			for(int i = 0; i <6; i++){
+	public void reStartGame(Stage primaryStage) throws Exception {
+			for(int i = 0; i < 6; i ++){
 				for(int j = 0; j < 7; j++){
 					boardNum[i][j] = 0;
 				}
 			}
-			if(game.turn){
-				if(game.whoseTurn){
-					makeBoard(primaryStage, 1);
-				}
-				else{
-					makeBoard(primaryStage,2);
-				}
-			}
-			else{
-				if(game.whoseTurn){
-					disabledBoard(primaryStage, 2);
-				}
-				else{
-					disabledBoard(primaryStage,1);
-				}
-			}
-		}
-		else{
-			hasOnePlayer(primaryStage);
-		}
+			game.hasTwoPlayers=false;
+			game.p1Win=false;
+			game.p2Win = false;
+			game.tie = false;
+			game.rowMove=10;
+			start(primaryStage);
+
 
 	}
 
-	public void exit(Stage primaryStage)  {
+	public void exit(Stage primaryStage) throws Exception {
 		game.hasTwoPlayers = false;
 		game.p1Win=false;
 		game.p2Win = false;
 		game.tie = false;
 //		game.rowMove=10;
 //		clientConnection.send(game);
-		System.out.println(game.hasTwoPlayers);
 		acceptMessage(game, primaryStage);
 		try {
 			clientConnection.socketClient.close();
@@ -542,7 +548,9 @@ public class ClientGUI extends Application {
 //		TextField text = new TextField();
 		Text text = new Text();
 		Button btnReplay = new Button("Replay");
+		btnReplay.setPrefSize(80,30);
 		Button exit = new Button("Exit Game");
+		exit.setPrefSize(80,30);
 		if(game.p1Win){
 			text.setText("Player One Wins");
 		} else if(game.p2Win){
@@ -550,14 +558,30 @@ public class ClientGUI extends Application {
 		}else if(game.tie){
 			text.setText("It's a Tie");
 		}
-		btnReplay.setOnAction(e->reStartGame(primaryStage));
-		exit.setOnAction(e-> exit(primaryStage));
+		text.setStyle("-fx-background-color:WHITE; -fx-font-size: 30");
+		btnReplay.setOnAction(e-> {
+			try {
+				reStartGame(primaryStage);
+			} catch (Exception ex) {
+				throw new RuntimeException(ex);
+			}
+		});
+		exit.setOnAction(e-> {
+			try {
+				exit(primaryStage);
+			} catch (Exception ex) {
+				throw new RuntimeException(ex);
+			}
+		});
 		VBox vb = new VBox();
 		vb.getChildren().add(text);
 		vb.getChildren().add(btnReplay);
 		vb.getChildren().add(exit);
+		vb.setAlignment(Pos.CENTER);
+		vb.setSpacing(20);
 		BorderPane bp = new BorderPane();
 		bp.setCenter(vb);
+		bp.setStyle("-fx-background-color:DARKSLATEBLUE");
 		Scene scene = new Scene(bp, 700,700);
 		primaryStage.setScene(scene);
 		primaryStage.show();
