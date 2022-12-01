@@ -97,7 +97,7 @@ public class ClientGUI extends Application {
 
 	public void acceptMessage(CFourInfo mes, Stage primaryStage){
 		game = mes;
-		System.out.println(mes.hasTwoPlayers);
+//		System.out.println(mes.hasTwoPlayers);
 		if(!mes.hasTwoPlayers){
 //			System.out.println("someone has left the game.");
 			game.rowMove=10;
@@ -110,7 +110,7 @@ public class ClientGUI extends Application {
 		}
 		else {
 //			game = mes;
-			System.out.println("ran the true statement");
+//			System.out.println("ran the true statement");
 			game.rowMove = mes.rowMove;
 			if(!mes.p1Win && !mes.p2Win && !mes.tie){
 				if(mes.turn){
@@ -142,7 +142,7 @@ public class ClientGUI extends Application {
 				preWinScreen(primaryStage, mes);
 			}
 		}
-		System.out.println("executed");
+//		System.out.println("executed");
 	}
 
 	public void preWinScreen(Stage primaryStage, CFourInfo mes){
@@ -177,7 +177,7 @@ public class ClientGUI extends Application {
 
 	}
 
-	public Boolean checkWin(CFourInfo game){
+	public Boolean checkWin(CFourInfo game, int[][] boardNum){
 		if(checkHor(boardNum)){
 			for(int i = 0; i < 4; i++){
 				boardNum[rowWins[i]][colWins[i]] = 3;
@@ -214,8 +214,8 @@ public class ClientGUI extends Application {
 				}
 				else if(num<4) {
 					for(int a = 0; a < rowWins.length; a++){
-						rowWins[a] = 10;
-						colWins[a] = 10;
+//						rowWins[a] = 0;
+//						colWins[a] = 0;
 					}
 					c = 0;
 					num = 1;
@@ -264,8 +264,8 @@ public class ClientGUI extends Application {
 					}
 					else if(num<4){
 						for(int k = 0; k < rowWins.length; k++){
-							rowWins[k] = 10;
-							colWins[k] = 10;
+//							rowWins[k] = 10;
+//							colWins[k] = 10;
 						}
 						c = 0;
 						num = 1;
@@ -286,8 +286,6 @@ public class ClientGUI extends Application {
 		int num = 1;
 		int a = 0;
 		int b = 0;
-		rowWins[0] = 0;
-		colWins[0] = 0;
 		int c = 0;
 		for (int j = 0; j < 7; j++) {
 			for (int i = 0; i < 6; i++) {
@@ -299,13 +297,10 @@ public class ClientGUI extends Application {
 					b = b+1;
 					if(pl == boardNum[a][b]){
 						num++;
-						rowWins[c] = a;
-						colWins[c] = b;
 					}
 					else if(num<4){
 						for(int k = 0; k < rowWins.length; k++){
-							rowWins[k] = 10;
-							colWins[k] = 10;
+
 						}
 						c = 0;
 						num = 0;
@@ -323,41 +318,42 @@ public class ClientGUI extends Application {
 
 	public static Boolean checkHor(int[][] boardNum){
 		int pl = boardNum[0][0];//which player were checking for
-//		rowWins[0] = 0;
-//		colWins[0] = 0;
 		int num = 0;//count of how many in a row
 		int c = 0;
 		for(int i = 0; i < 6 ; i++){
 			for (int j = 0; j < 7; j++){
 				if(pl == boardNum[i][j] && pl!=0 ){
-					num++;
 					rowWins[c] = i;
 					colWins[c] = j;
+					System.out.println("2D array " + boardNum[i][j]);
+					num++;
 					c++;
 				}
 				else if(num<4) {
-					for(int a = 0; a < rowWins.length; a++){
-//						rowWins[a] = 10;
-//						colWins[a] = 10;
-					}
-					c = 0;
+					System.out.println("middle");
+					c = 1;
 					num = 1;
+					rowWins[0] = i;
+					colWins[0] = j;
 				}
 				pl = boardNum[i][j];
-				if(num >= 4){
-//					rowWins[3] = rowWins[0];
-//					colWins[3] = colWins[2]+1;
+
+				if(num == 4){
+					for(int k = 0; k < num; k++){
+						System.out.println(k +" holds" + rowWins[k] + "col: "+ colWins[k] );
+					}
+					System.out.println("whore returns true");
 					return true;
 				}
 			}
+			c = 0;
 			num = 0;
 		}
-
 		return false;
 	}
 
 	public void hasOnePlayer(Stage primaryStage){
-		System.out.println("called the has one player screen.");
+//		System.out.println("called the has one player screen.");
 		Text info = new Text();
 		info.setText("Waiting For Second Player...");
 		BorderPane bp = new BorderPane();
@@ -420,10 +416,10 @@ public class ClientGUI extends Application {
 				game.columnMove = column;
 				game.turn = !game.turn;
 //			System.out.println(game.turn + "" +game.whoseTurn );
-				if (checkWin(game) && player == 1) {
+				if (checkWin(game, boardNum) && player == 1) {
 					game.p1Win = true;
 				}
-				if (checkWin(game) && player == 2) {
+				if (checkWin(game, boardNum) && player == 2) {
 					game.p2Win = true;
 				}
 				if (!game.p1Win && !game.p2Win && checkTie(boardNum)) {

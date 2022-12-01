@@ -85,19 +85,149 @@ class MyTest {
 		assertFalse(b.checkHor(gB));
 		assertFalse(b.checkVert(gB));
 		assertFalse(b.checkDiagonal(gB));
+
 		assertTrue(b.checkTie(gB));
 
 
 
 	}
 
+	@Test
+	void testWin6() throws Exception {
+		CFourInfo game = new CFourInfo();       // check tie
+		int[][] gB = {
+				{2, 2, 1, 1, 2, 2, 1},
+				{2, 1, 2, 1, 2, 1, 1},
+				{2, 2, 1, 2, 2, 1, 2},
+				{1, 1, 1, 2, 1, 2, 1},
+				{2, 2, 1, 2, 2, 1, 2},
+				{1, 1, 2, 1, 1, 2, 1},
+		};
+		ClientGUI b = new ClientGUI();
+		assertFalse(b.checkHor(gB));
+		assertFalse(b.checkVert(gB));
+		//assertFalse(b.checkNE(gB));
+		//assertFalse(b.checkNW(gB));
+
+		assertTrue(b.checkTie(gB));
 
 
 
+	}
 
+	@Test
+	void testWin7() throws Exception {
+		CFourInfo game = new CFourInfo();
+		int[][] gB = {
+				{2, 1, 1, 1, 2, 2, 2},
+				{2, 2, 2, 1, 2, 1, 2},
+				{1, 2, 1, 2, 1, 2, 2},
+				{1, 2, 1, 1, 1, 2, 1},
+				{2, 2, 1, 2, 1, 2, 1},
+				{1, 2, 2, 1, 2, 1, 1},
+		};
+		ClientGUI b = new ClientGUI();
+		assertTrue(b.checkNW(gB));
+	}
+
+
+	@Test
+	void testWin8() throws Exception {
+		CFourInfo game = new CFourInfo();
+		int[][] gB = {
+				{2, 1, 1, 1, 2, 1, 2},
+				{2, 2, 2, 1, 2, 1, 2},
+				{1, 2, 1, 2, 1, 2, 2},
+				{1, 2, 2, 2, 1, 2, 1},
+				{2, 2, 1, 2, 1, 2, 1},
+				{1, 2, 2, 1, 2, 1, 1},
+		};
+		ClientGUI b = new ClientGUI();
+		assertTrue(b.checkNE(gB));
+	}
+
+	@Test
+	void testWin9() throws Exception {
+		CFourInfo game = new CFourInfo();
+		int[][] gB = {
+				{2, 1, 1, 1, 2, 1, 2},
+				{2, 2, 2, 1, 2, 1, 2},
+				{1, 2, 1, 1, 1, 2, 2},
+				{1, 2, 2, 1, 1, 2, 1},
+				{2, 2, 1, 2, 1, 2, 1},
+				{1, 2, 2, 1, 2, 1, 1},
+		};
+		ClientGUI b = new ClientGUI();
+		assertTrue(b.checkVert(gB));
+	}
+
+
+	@Test
+	void testWin10() throws Exception {
+		CFourInfo game = new CFourInfo();
+		int[][] gB = {
+				{2, 1, 1, 1, 1, 2, 2},
+				{2, 1, 2, 2, 2, 1, 2},
+				{1, 2, 1, 1, 1, 2, 2},
+				{1, 1, 2, 1, 1, 2, 1},
+				{2, 2, 1, 2, 1, 2, 1},
+				{1, 1, 2, 1, 2, 1, 1},
+		};
+		ClientGUI b = new ClientGUI();
+		assertTrue(b.checkHor(gB));
+	}
+
+
+	@Test
+	void testWin11() throws Exception {
+		CFourInfo game = new CFourInfo();
+		int[][] gB = {
+				{2, 1, 1, 2, 2, 2, 2},
+				{2, 1, 2, 2, 2, 1, 2},
+				{1, 2, 2, 1, 1, 2, 2},
+				{1, 2, 2, 1, 1, 2, 1},
+				{2, 2, 1, 2, 1, 2, 1},
+				{1, 1, 2, 1, 2, 1, 1},
+		};
+		ClientGUI b = new ClientGUI();
+		assertTrue(b.checkDiagonal(gB));
+	}
+
+
+	@Test
+	void testWin12() throws Exception {
+		CFourInfo game = new CFourInfo();
+		int[][] gB = {
+				{2, 1, 1, 2, 2, 2, 2},
+				{2, 1, 2, 2, 2, 1, 2},
+				{1, 2, 2, 1, 1, 2, 2},
+				{1, 2, 2, 2, 2, 1, 1},
+				{2, 2, 1, 2, 1, 2, 1},
+				{1, 1, 2, 1, 2, 1, 1},
+		};
+		ClientGUI b = new ClientGUI();
+		assertTrue(b.checkHor(gB));
+	}
+
+
+	@Test
+	void testWin13() throws Exception {
+		CFourInfo game = new CFourInfo();
+		int[][] gB = {
+				{2, 1, 1, 2, 1, 2, 2},
+				{2, 1, 2, 2, 2, 1, 2},
+				{1, 2, 2, 1, 1, 2, 2},
+				{1, 2, 2, 2, 2, 1, 1},
+				{2, 2, 1, 2, 1, 2, 1},
+				{1, 1, 2, 1, 2, 1, 1},
+		};
+		ClientGUI b = new ClientGUI();
+		assertTrue(b.checkWin(game,gB));
+	}
 
 
 
 
 }
+
 
